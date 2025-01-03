@@ -36,3 +36,7 @@ Thumbs.db
 # IDEs
 .vscode/
 .idea/
+
+# Fichiers spécifiques au projet
+files/facture/
+results_trains/

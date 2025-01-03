@@ -10,6 +10,6 @@ model.train(
     imgsz=640,                 # Taille des images
     batch=16,                  # Taille du batch
     name='invoice_yolov8',     # Nom du projet
-    project='./results_trains',    # Dossier où sauvegarder les résultats
+    project='./results_trains',   # Dossier où sauvegarder les résultats
     device='cpu'                  # GPU (mettez "cpu" si pas de GPU disponible)
 )
