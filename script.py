@@ -70,9 +70,9 @@ def extract_text(image_path):
         cropped_pil = Image.fromarray(cv2.cvtColor(cropped_region, cv2.COLOR_BGR2RGB))
         
         # Extraire le texte avec Tesseract
-        extracted_text = pytesseract.image_to_string(cropped_pil)  # utilisez 'fra'
+        extracted_text = pytesseract.image_to_string(cropped_pil)
         
-        # Préparer les données extraites
+        # Préparer les données extraites 
         detection_data = {
             "text": extracted_text.strip(),
             "confidence": round(detection['confidence'], 2),
@@ -98,10 +98,9 @@ def extract_text(image_path):
 
 def main():
     # Chemin de l'image à traiter
-    image_path = './files/facture/facture_test4.jpg'
+    image_path = './files/facture/facture_test2.jpg'
     
     # Détecter les régions d'intérêt
-    # print(extract_text(image_path))
     json_data = extract_text(image_path)
     print(json.dumps(json_data , indent=4, ensure_ascii=False))
     
