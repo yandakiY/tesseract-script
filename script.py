@@ -8,7 +8,7 @@ from PIL import Image
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 # Charger le modèle YOLOv8
-model = YOLO('./results_trains/invoice_yolov8/weights/best.pt')  # Chemin vers le modèle YOLO entraîné
+model = YOLO('./results_trains/invoice_yolov8_new_train/weights/best.pt')  # Chemin vers le modèle YOLO entraîné
 
 labels = [
     "Adresse_Facturation",
@@ -98,7 +98,7 @@ def extract_text(image_path):
 
 def main():
     # Chemin de l'image à traiter
-    image_path = './files/facture/facture_test2.jpg'
+    image_path = './files/facture/facture_test10.png'
     
     # Détecter les régions d'intérêt
     json_data = extract_text(image_path)
