@@ -1,4 +1,5 @@
 import json
+import sys
 import cv2
 from ultralytics import YOLO
 import pytesseract
@@ -6,9 +7,11 @@ from pytesseract import Output
 import os
 from PIL import Image
 
+# Chemin vers l'exécutable Tesseract
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-# Charger le modèle YOLOv8
-model = YOLO('./results_trains/invoice_yolov8_new_train/weights/best.pt')  # Chemin vers le modèle YOLO entraîné
+
+# Chargement du modèle YOLOv8 entrainé
+model = YOLO('./results_trains/invoice_yolov8_new_train/weights/best.onnx')  # Chemin absolu vers le modèle YOLO entraîné
 
 labels = [
     "Adresse_Facturation",
@@ -46,10 +49,6 @@ def detect_regions(image_path):
             "confidence": conf.item(),
             "box": (xmin, ymin, xmax, ymax)
         })
-
-    # Affichage des détections
-    # for detection in detections:
-    #     print(f"Classe : {detection['label']}, Confiance : {detection['confidence']:.2f}, Boîte : {detection['box']}")
         
     return detections, image
 
@@ -72,37 +71,35 @@ def extract_text(image_path):
         # Extraire le texte avec Tesseract
         extracted_text = pytesseract.image_to_string(cropped_pil)
         
-        # Préparer les données extraites 
+        # Préparer les données extraites
         detection_data = {
             "text": extracted_text.strip(),
             "confidence": round(detection['confidence'], 2),
-            "box": detection['box']
+            "box": {
+                "xmin": xmin,
+                "ymin": ymin,
+                "xmax": xmax,
+                "ymax": ymax
+            }
         }
         
         # Ajouter les données au dictionnaire
         label = detection['label']
         if label not in extracted_data:
-            extracted_data[label] = []  # Crée une liste pour chaque nouveau label
+            extracted_data[label] = [] # Crée une liste pour chaque nouveau label
         extracted_data[label].append(detection_data)
     
-    # Afficher les résultats pour chaque label
-    # for label, entries in extracted_data.items():
-    #     print(f"Label : {label}")
-    #     for entry in entries:
-    #         print(f"  Confiance : {entry['confidence']:.2f}")
-    #         print(f"  Texte extrait : {entry['text']}")
-    #         print(f"  Boîte : {entry['box']}\n")
     
     return extracted_data
 
 
-def main():
-    # Chemin de l'image à traiter
-    image_path = './files/facture/facture_test10.png'
+# lancement du script par ligne de commande : `py script.py <image_path>`
+if __name__ == '__main__':
+    
+    if len(sys.argv) != 2:
+        print("Usage: python script.py <image_path>")
+        sys.exit(1)
     
     # Détecter les régions d'intérêt
-    json_data = extract_text(image_path)
+    json_data = extract_text(sys.argv[1])
     print(json.dumps(json_data , indent=4, ensure_ascii=False))
-    
-
-main()
