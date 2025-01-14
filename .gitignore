@@ -36,3 +36,8 @@ Thumbs.db
 # IDEs
 .vscode/
 .idea/
+
+# Fichiers spécifiques au projet
+files/facture/
+results_trains/invoice_yolov8/
+results_trains/invoice_yolov8_retrain_fast1/
