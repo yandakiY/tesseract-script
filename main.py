@@ -62,7 +62,6 @@ async def process_image(file: UploadFile = File(...)):
         
         # detection des regions et extraction du texte des boxes detectées
         extracted_data = extract_text(file.file)
-        
         logger.info("Extracted data: %s", extracted_data)
 
         return {"extracted_data": extracted_data}

@@ -10,11 +10,7 @@ data_yaml = 'C:/Users/HP ELITEBOOK 840/Downloads/Annotation-Factures 2.v1i.yolov
 results = model.val(data=data_yaml, imgsz=640, batch=16, device='cpu')
 
 # Afficher les résultats
-#print("mAP_50:", results.metrics.mAP50)
-# print("mAP_50_95:", results['metrics/mAP_50_95'])
-# print("Precision:", results['metrics/precision'])
-# print("Recall:", results['metrics/recall'])
-print("Results:", results.box.map50)
+
+print("Results:", results.box.map50) # pourcentage des predictions
 print("Precision globale:", results.box.mp)
 print("Precisions:", results.box.p)
-# print("Results:", results.box.recall)
