@@ -88,9 +88,16 @@ def extract_text(image_path):
         if label not in extracted_data:
             extracted_data[label] = [] # Crée une liste pour chaque nouveau label
         extracted_data[label].append(detection_data)
+        
+        # Dessiner les rectangles sur l'image
+        cv2.rectangle(image, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
+        cv2.putText(image, label, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
     
+    # Enregistrer l'image avec les rectangles dessinés
+    output_image_path = os.path.splitext(image_path)[0] + "_annotated.jpg"
+    cv2.imwrite(output_image_path, image)
     
-    return extracted_data
+    return extracted_data, output_image_path
 
 
 # lancement du script par ligne de commande : `py script.py <image_path>`
@@ -101,5 +108,6 @@ if __name__ == '__main__':
         sys.exit(1)
     
     # Détecter les régions d'intérêt
-    json_data = extract_text(sys.argv[1])
+    json_data , image = extract_text(sys.argv[1])
     print(json.dumps(json_data , indent=4, ensure_ascii=False))
+    print(f"Annotated image saved at: {image}")
