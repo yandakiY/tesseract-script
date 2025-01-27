@@ -36,23 +36,25 @@ model = YOLO("./results_trains/invoice_yolov8_new_train/weights/best.onnx")
 
 # Liste des labels
 labels = [
-    "Adresse_Facturation",
-    "Adresse_Livraison",
-    "Date_Facturation",
-    "Echeance",
-    "Email_Client",
-    "Nom_Client",
-    "Numero_Facture",
-    "Pourcentage_Remise",
-    "Pourcentage_TVA",
-    "Produits",
-    "Remise",
-    "TVA",
-    "Tel_Client",
-    "Total_Hors_TVA",
-    "Total_TTC"
+    'Adresse_Facturation', 
+    'Adresse_Livraison', 
+    'Date_Facturation', 
+    'Devise', 
+    'Echeance', 
+    'Email_Client', 
+    'Fournisseur', 
+    'Nom_Client', 
+    'Numero_Facture', 
+    'Pourcentage_Remise', 
+    'Pourcentage_TVA', 
+    'Produits', 
+    'Remise', 
+    'TVA', 
+    'Tel_Client', 
+    'Total_Hors_TVA', 
+    'Total_TTC', 
+    'site_web'
 ]
-
 
 # Créer un dossier pour les images annotées s'il n'existe pas
 annotated_images_folder = "annotated_images"
@@ -81,6 +83,7 @@ async def process_image(file: UploadFile = File(...)):
         os.rename(output_image_path, annotated_image_path)
         
         logger.info("Extracted data: %s", extracted_data)
+        print("Extracted data", extracted_data)
 
         os.remove(temp_file_path)
         return {"extracted_data": extracted_data, "image":f"/images/{annotated_image_name}"}
