@@ -38,8 +38,7 @@ Thumbs.db
 .idea/
 
 # Fichiers spécifiques au projet
-files/facture/
-results_trains/invoice_yolov8/
-results_trains/invoice_yolov8_retrain_fast1/
+files/
+results_trains/
 runs/
 annotated_images/
