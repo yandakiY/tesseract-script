@@ -6,30 +6,55 @@ import pytesseract
 from pytesseract import Output
 import os
 from PIL import Image
+from paddleocr import PaddleOCR
 
 # Chemin vers l'exécutable Tesseract
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 # Chargement du modèle YOLOv8 entrainé
-model = YOLO('./results_trains/invoice_yolov8_new_train/weights/best.onnx')  # Chemin absolu vers le modèle YOLO entraîné
+model = YOLO('./results_trains/entrainement_facture1_yolov8_new_field2/weights/best.pt')  # Chemin absolu vers le modèle YOLO entraîné
 
 labels = [
-    "Adresse_Facturation",
-    "Adresse_Livraison",
-    "Date_Facturation",
-    "Echeance",
-    "Email_Client",
-    "Nom_Client",
-    "Numero_Facture",
-    "Pourcentage_Remise",
-    "Pourcentage_TVA",
-    "Produits",
-    "Remise",
-    "TVA",
-    "Tel_Client",
-    "Total_Hors_TVA",
-    "Total_TTC"
+    'Adresse_Facturation', 
+    'Adresse_Livraison', 
+    'Date_Facturation', 
+    'Devise', 
+    'Echeance', 
+    'Email_Client', 
+    'Fournisseur', 
+    'Nom_Client', 
+    'Numero_Facture', 
+    'Pourcentage_Remise', 
+    'Pourcentage_TVA', 
+    'Produits', 
+    'Remise', 
+    'TVA', 
+    'Tel_Client', 
+    'Total_Hors_TVA', 
+    'Total_TTC', 
+    'site_web'
 ]
+
+label_colors = {
+    "Adresse_Facturation": (255, 0, 0),  # Rouge
+    "Adresse_Livraison": (0, 255, 0),    # Vert
+    "Date_Facturation": (0, 0, 255),     # Bleu
+    "Devise": (255, 255, 0),             # Cyan
+    "Echeance": (255, 0, 255),           # Magenta
+    "Email_Client": (0, 255, 255),       # Jaune
+    "Fournisseur": (128, 0, 128),        # Violet
+    "Nom_Client": (128, 128, 0),         # Olive
+    "Numero_Facture": (0, 128, 128),     # Teal
+    "Pourcentage_Remise": (128, 128, 128),# Gris
+    "Pourcentage_TVA": (0, 0, 128),      # Navy
+    "Produits": (128, 0, 0),             # Maroon
+    "Remise": (0, 128, 0),               # Vert foncé
+    "TVA": (0, 0, 128),                  # Bleu foncé
+    "Tel_Client": (128, 0, 128),         # Violet foncé
+    "Total_Hors_TVA": (255, 165, 0),     # Orange
+    "Total_TTC": (255, 20, 147),         # Rose foncé
+    "site_web": (75, 0, 130)             # Indigo
+}
 
 def detect_regions(image_path):
     # Charger l'image avec OpenCV
@@ -37,8 +62,6 @@ def detect_regions(image_path):
     
     # Effectuer la détection
     results = model(image)
-    
-    # print('result of image', results[0].boxes)
     
     detections = []
     for box, conf, cls_index in zip(results[0].boxes.xyxy, results[0].boxes.conf, results[0].boxes.cls):
@@ -53,17 +76,32 @@ def detect_regions(image_path):
     return detections, image
 
 
+def preprocess_image(image):
+    # Convertir en niveaux de gris
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    # Appliquer une binarisation
+    _, binary = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    
+    # Appliquer un filtre pour réduire le bruit
+    filtered = cv2.medianBlur(binary, 3)
+    
+    return filtered
+
 def extract_text(image_path):
     # Détecter les régions
-    detections, image = detect_regions(image_path)
+    detections, original_image = detect_regions(image_path)
     
+    annotated_image = original_image.copy()
     # Stocker les résultats dans un dictionnaire
     extracted_data = {}
+    overlay = annotated_image.copy()
+    alpha = 0.4
     
     for detection in detections:
         # Découper chaque région détectée
         xmin, ymin, xmax, ymax = detection['box']
-        cropped_region = image[ymin:ymax, xmin:xmax]
+        cropped_region = original_image[ymin:ymax, xmin:xmax]
         
         # Convertir en image PIL (format attendu par Tesseract)
         cropped_pil = Image.fromarray(cv2.cvtColor(cropped_region, cv2.COLOR_BGR2RGB))
@@ -89,13 +127,21 @@ def extract_text(image_path):
             extracted_data[label] = [] # Crée une liste pour chaque nouveau label
         extracted_data[label].append(detection_data)
         
-        # Dessiner les rectangles sur l'image
-        cv2.rectangle(image, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
-        cv2.putText(image, label, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+        # Dessiner un rectangle transparent avec des bords colorés
+        color = label_colors.get(label, (0, 0, 0))  # Utiliser blanc par défaut si le label n'est pas trouvé
+        cv2.rectangle(overlay, (xmin, ymin), (xmax, ymax), color, -1)  # Dessiner un rectangle avec des bords colorés
+        
+        # Ajouter le libellé de la classe prédite en dessous de la zone colorée
+        # text_position = (xmin, ymax + 20)
+        # font_scale = 0.4  # Taille du texte réduite
+        # cv2.putText(annotated_image, label, text_position, cv2.FONT_HERSHEY_SIMPLEX, font_scale, color, 2)
+        
+        
+    # Appliquer le surlignage avec transparence
+    cv2.addWeighted(overlay, alpha, annotated_image, 1 - alpha, 0, annotated_image)
     
-    # Enregistrer l'image avec les rectangles dessinés
     output_image_path = os.path.splitext(image_path)[0] + "_annotated.jpg"
-    cv2.imwrite(output_image_path, image)
+    cv2.imwrite(output_image_path, annotated_image)
     
     return extracted_data, output_image_path
 
