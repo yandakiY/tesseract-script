@@ -95,8 +95,6 @@ def extract_text(image_path):
     annotated_image = original_image.copy()
     # Stocker les résultats dans un dictionnaire
     extracted_data = {}
-    overlay = annotated_image.copy()
-    alpha = 0.4
     
     for detection in detections:
         # Découper chaque région détectée
@@ -127,19 +125,7 @@ def extract_text(image_path):
             extracted_data[label] = [] # Crée une liste pour chaque nouveau label
         extracted_data[label].append(detection_data)
         
-        # Dessiner un rectangle transparent avec des bords colorés
-        color = label_colors.get(label, (0, 0, 0))  # Utiliser blanc par défaut si le label n'est pas trouvé
-        cv2.rectangle(overlay, (xmin, ymin), (xmax, ymax), color, -1)  # Dessiner un rectangle avec des bords colorés
         
-        # Ajouter le libellé de la classe prédite en dessous de la zone colorée
-        # text_position = (xmin, ymax + 20)
-        # font_scale = 0.4  # Taille du texte réduite
-        # cv2.putText(annotated_image, label, text_position, cv2.FONT_HERSHEY_SIMPLEX, font_scale, color, 2)
-        
-        
-    # Appliquer le surlignage avec transparence
-    cv2.addWeighted(overlay, alpha, annotated_image, 1 - alpha, 0, annotated_image)
-    
     output_image_path = os.path.splitext(image_path)[0] + "_annotated.jpg"
     cv2.imwrite(output_image_path, annotated_image)
     
