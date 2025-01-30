@@ -76,7 +76,7 @@ async def process_image(file: UploadFile = File(...)):
         
         # detection des regions et extraction du texte des boxes detectées
         extracted_data , output_image_path = extract_text(temp_file_path)
-       
+        
         # Déplacer l'image annotée dans le dossier des images annotées
         annotated_image_name = f"{timestamp}_{os.path.basename(output_image_path)}"
         annotated_image_path = os.path.join(annotated_images_folder, annotated_image_name)
