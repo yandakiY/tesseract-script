@@ -12,5 +12,5 @@ Ce projet utilise FastAPI pour créer une API qui traite des images de factures,
 1. Clonez le dépôt :
 
 ```bash
-git clone https://github.com/yandakiY/madata-project.git
-cd madata-project/script-python/tesseract-script
+git clone https://github.com/yandakiY/tesseract-script
+cd tesseract-script
