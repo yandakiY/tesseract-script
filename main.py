@@ -1,5 +1,7 @@
+import json
 import logging
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from typing import Dict
+from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from ultralytics import YOLO
@@ -7,6 +9,10 @@ from script import detect_regions, extract_text
 import uvicorn as uvicorn
 import os
 from datetime import datetime
+from models.annotation_request import AnnotationRequest
+from models.coordinates import Coordinates
+from models.dimensions import Dimensions
+from script_annotation_yolo import process_image_and_annotations
 
 
 
@@ -91,6 +97,43 @@ async def process_image(file: UploadFile = File(...)):
     except Exception as e:
         logger.error("Error processing image: %s", str(e))
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v0/ocr-facture/add_file_in_dataset")
+async def add_file_in_dataset(file: UploadFile = File(...), dimensions: str = Form(...),coordonnees: str = Form(...)):
+    
+    try:
+        dimensions_data = json.loads(dimensions)
+        coordonnees_data = json.loads(coordonnees)
+    except json.JSONDecodeError:
+        return {"error": "Invalid JSON format"}, 422
+
+    
+    try:
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+
+        # Enregistrer l'image
+        temp_file_path = f"{timestamp}{file.filename}"
+        with open(temp_file_path, "wb") as buffer:
+            buffer.write(await file.read())
+        
+        logger.info("Received file: %s", file.filename)
+        
+        # Détection des régions et extraction du texte des boxes détectées
+        txt_path, resized_image_path = process_image_and_annotations(temp_file_path, dimensions_data, coordonnees_data)
+        
+        logger.info("Extracted data: %s", coordonnees_data)
+        print("Extracted data", coordonnees_data)
+
+        os.remove(temp_file_path)
+        # return {"extracted_data": coordonnees_data, "annotation_file": txt_path, "resized_image": resized_image_path}
+        return {"message":"Operation fait avec succes"}
+
+    except Exception as e:
+        logger.error("Error processing image: %s", str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000 , reload=True)

@@ -35,27 +35,6 @@ labels = [
     'site_web'
 ]
 
-label_colors = {
-    "Adresse_Facturation": (255, 0, 0),  # Rouge
-    "Adresse_Livraison": (0, 255, 0),    # Vert
-    "Date_Facturation": (0, 0, 255),     # Bleu
-    "Devise": (255, 255, 0),             # Cyan
-    "Echeance": (255, 0, 255),           # Magenta
-    "Email_Client": (0, 255, 255),       # Jaune
-    "Fournisseur": (128, 0, 128),        # Violet
-    "Nom_Client": (128, 128, 0),         # Olive
-    "Numero_Facture": (0, 128, 128),     # Teal
-    "Pourcentage_Remise": (128, 128, 128),# Gris
-    "Pourcentage_TVA": (0, 0, 128),      # Navy
-    "Produits": (128, 0, 0),             # Maroon
-    "Remise": (0, 128, 0),               # Vert foncé
-    "TVA": (0, 0, 128),                  # Bleu foncé
-    "Tel_Client": (128, 0, 128),         # Violet foncé
-    "Total_Hors_TVA": (255, 165, 0),     # Orange
-    "Total_TTC": (255, 20, 147),         # Rose foncé
-    "site_web": (75, 0, 130)             # Indigo
-}
-
 def detect_regions(image_path):
     # Charger l'image avec OpenCV
     image = cv2.imread(image_path)
