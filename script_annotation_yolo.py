@@ -133,6 +133,8 @@ def process_image_and_annotations(image_path, dimensions, annotations):
     # Récupérer le nom de l'image sans extension
     image_name = os.path.basename(image_path)
     image_basename = timestamp+"_"+os.path.splitext(image_name)[0]
+    image_extension = os.path.splitext(image_name)[1]
+
 
     # Chemin du fichier .txt de sortie
     txt_filename = f"{image_basename}.txt"
@@ -169,7 +171,7 @@ def process_image_and_annotations(image_path, dimensions, annotations):
     # Redimensionner et enregistrer l'image
     image = cv2.imread(image_path)
     resized_image = cv2.resize(image, (dimensions["width"], dimensions["height"]))
-    resized_image_path = os.path.join(IMAGE_FOLDER, image_name)
+    resized_image_path = os.path.join(IMAGE_FOLDER, f"{image_basename}{image_extension}")
     cv2.imwrite(resized_image_path, resized_image)
 
     print(f"✅ Image redimensionnée enregistrée dans {resized_image_path}")
