@@ -6,7 +6,7 @@ import pytesseract
 from pytesseract import Output
 import os
 from PIL import Image
-from paddleocr import PaddleOCR
+
 
 # Chemin vers l'exécutable Tesseract
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
@@ -44,8 +44,8 @@ def detect_regions(image_path):
     
     detections = []
     for box, conf, cls_index in zip(results[0].boxes.xyxy, results[0].boxes.conf, results[0].boxes.cls):
-        label = labels[int(cls_index)]  # Récupérer le nom de la classe
-        xmin, ymin, xmax, ymax = map(int, box.tolist())  # Coordonées absolues
+        label = labels[int(cls_index)] 
+        xmin, ymin, xmax, ymax = map(int, box.tolist())
         detections.append({
             "label": label,
             "confidence": conf.item(),
@@ -53,7 +53,6 @@ def detect_regions(image_path):
         })
         
     return detections, image
-
 
 def preprocess_image(image):
     # Convertir en niveaux de gris

@@ -5,14 +5,14 @@ from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from ultralytics import YOLO
-from script import detect_regions, extract_text
+from app.script_extract_text import detect_regions, extract_text
 import uvicorn as uvicorn
 import os
 from datetime import datetime
 from models.annotation_request import AnnotationRequest
 from models.coordinates import Coordinates
 from models.dimensions import Dimensions
-from script_annotation_yolo import process_image_and_annotations
+from app.script_annotation_yolo import process_image_and_annotations
 
 
 
