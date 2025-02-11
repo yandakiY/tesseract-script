@@ -3,9 +3,9 @@ import sys
 import cv2
 from ultralytics import YOLO
 import pytesseract
-from pytesseract import Output
-import os
 from PIL import Image
+import easyocr
+
 
 
 # Chemin vers l'exécutable Tesseract
@@ -58,19 +58,33 @@ def preprocess_image(image):
     # Convertir en niveaux de gris
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     
-    # Appliquer une binarisation
-    _, binary = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    # Appliquer une débruitage
+    denoised = cv2.fastNlMeansDenoising(gray)
     
-    # Appliquer un filtre pour réduire le bruit
-    filtered = cv2.medianBlur(binary, 3)
+    # Améliorer le contraste
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    enhanced = clahe.apply(denoised)
     
-    return filtered
+    # Binarisation adaptative
+    binary = cv2.adaptiveThreshold(
+        enhanced,
+        255,
+        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY,
+        11,
+        2
+    )
+    
+    # Appliquer une dilatation pour améliorer la lisibilité
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
+    processed = cv2.dilate(binary, kernel, iterations=1)
+    
+    return processed
 
 def extract_text(image_path):
     # Détecter les régions
     detections, original_image = detect_regions(image_path)
     
-    annotated_image = original_image.copy()
     # Stocker les résultats dans un dictionnaire
     extracted_data = {}
     
@@ -79,11 +93,28 @@ def extract_text(image_path):
         xmin, ymin, xmax, ymax = detection['box']
         cropped_region = original_image[ymin:ymax, xmin:xmax]
         
+        # Prétraiter l'image
+        processed_region = preprocess_image(cropped_region)
+        
+        # Configuration Tesseract
+        custom_config = r'--oem 3 --psm 6'
+        
+        
         # Convertir en image PIL (format attendu par Tesseract)
-        cropped_pil = Image.fromarray(cv2.cvtColor(cropped_region, cv2.COLOR_BGR2RGB))
+        # cropped_pil = Image.fromarray(cv2.cvtColor(cropped_region, cv2.COLOR_BGR2RGB))
+        label = detection['label']
         
         # Extraire le texte avec Tesseract
-        extracted_text = pytesseract.image_to_string(cropped_pil)
+        extracted_text = pytesseract.image_to_string(
+            processed_region, 
+            config=custom_config,
+            lang='fra'
+        )
+        # image_for_easyocr = cv2.cvtColor(cropped_region, cv2.COLOR_BGR2RGB)
+        # reader = easyocr.Reader(['fr']) # this needs to run only once to load the model into memory
+        # results = reader.readtext(image_for_easyocr , detail=0 , paragraph=True)
+        # print("resut of extraction", results , " for label", label)
+        # extracted_text = results[0] if results else ""
         
         # Préparer les données extraites
         detection_data = {
@@ -98,16 +129,13 @@ def extract_text(image_path):
         }
         
         # Ajouter les données au dictionnaire
-        label = detection['label']
+        #label = detection['label']
         if label not in extracted_data:
             extracted_data[label] = [] # Crée une liste pour chaque nouveau label
         extracted_data[label].append(detection_data)
         
-        
-    output_image_path = os.path.splitext(image_path)[0] + "_annotated.jpg"
-    cv2.imwrite(output_image_path, annotated_image)
     
-    return extracted_data, output_image_path
+    return extracted_data
 
 
 # lancement du script par ligne de commande : `py script.py <image_path>`
