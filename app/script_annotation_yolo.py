@@ -178,6 +178,3 @@ def process_image_and_annotations(image_path, dimensions, annotations):
 
     return txt_path, resized_image_path
 
-
-# dimensions = {"width": 750, "height": 1061}
-# process_image_and_annotations("telechargement (6).png", dimensions ,annotations)
