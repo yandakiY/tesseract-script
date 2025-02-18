@@ -3,8 +3,6 @@ import sys
 import cv2
 from ultralytics import YOLO
 import pytesseract
-from PIL import Image
-import easyocr
 
 
 
@@ -36,15 +34,14 @@ labels = [
 ]
 
 def detect_regions(image_path):
-    # Charger l'image avec OpenCV
+    
     image = cv2.imread(image_path)
     
-    # Effectuer la détection
     results = model(image)
     
     detections = []
     for box, conf, cls_index in zip(results[0].boxes.xyxy, results[0].boxes.conf, results[0].boxes.cls):
-        label = labels[int(cls_index)] 
+        label = labels[int(cls_index)]
         xmin, ymin, xmax, ymax = map(int, box.tolist())
         detections.append({
             "label": label,
@@ -94,27 +91,10 @@ def extract_text(image_path):
         cropped_region = original_image[ymin:ymax, xmin:xmax]
         
         # Prétraiter l'image
-        processed_region = preprocess_image(cropped_region)
-        
-        # Configuration Tesseract
-        custom_config = r'--oem 3 --psm 6'
-        
-        
-        # Convertir en image PIL (format attendu par Tesseract)
-        # cropped_pil = Image.fromarray(cv2.cvtColor(cropped_region, cv2.COLOR_BGR2RGB))
         label = detection['label']
         
         # Extraire le texte avec Tesseract
-        extracted_text = pytesseract.image_to_string(
-            processed_region, 
-            config=custom_config,
-            lang='fra'
-        )
-        # image_for_easyocr = cv2.cvtColor(cropped_region, cv2.COLOR_BGR2RGB)
-        # reader = easyocr.Reader(['fr']) # this needs to run only once to load the model into memory
-        # results = reader.readtext(image_for_easyocr , detail=0 , paragraph=True)
-        # print("resut of extraction", results , " for label", label)
-        # extracted_text = results[0] if results else ""
+        extracted_text = pytesseract.image_to_string(cropped_region)
         
         # Préparer les données extraites
         detection_data = {
@@ -129,14 +109,11 @@ def extract_text(image_path):
         }
         
         # Ajouter les données au dictionnaire
-        #label = detection['label']
         if label not in extracted_data:
             extracted_data[label] = [] # Crée une liste pour chaque nouveau label
         extracted_data[label].append(detection_data)
-        
     
     return extracted_data
-
 
 # lancement du script par ligne de commande : `py script.py <image_path>`
 if __name__ == '__main__':
