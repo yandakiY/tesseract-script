@@ -1,6 +1,6 @@
 # Madata Project - Script Python
 
-Ce projet utilise FastAPI pour créer une API qui traite des images de factures, détecte les régions d'intérêt et extrait le texte de ces régions en utilisant PaddleOCR. Les images annotées sont ensuite enregistrées et renvoyées en réponse à la requête.
+Ce projet utilise FastAPI pour créer une API qui traite des images de factures, détecte les régions d'intérêt et extrait le texte de ces régions en utilisant Tesseract. Les images annotées sont ensuite enregistrées et renvoyées en réponse à la requête.
 
 ## Prérequis
 

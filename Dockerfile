@@ -1,20 +1,26 @@
-# Utiliser une image de base officielle Python
-FROM python:3.9-slim
+# Dockerfile
+FROM python:3.12-slim
 
-# Définir le répertoire de travail dans le conteneur
+# Set the working directory
 WORKDIR /app
 
-# Copier le fichier requirements.txt dans le conteneur
-COPY requirements.txt .
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    tesseract-ocr \
+    libgl1-mesa-glx \
+    && rm -rf /var/lib/apt/lists/*
 
-# Installer les dépendances
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy requirements and install dependencies
+COPY requirements.txt ./
+# Mise à jour de pip et installation des dépendances
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Copier le reste du code de l'application dans le conteneur
+# Copy the application code
 COPY . .
 
-# Exposer le port sur lequel l'application va s'exécuter
+# Expose FastAPI port
 EXPOSE 8000
 
-# Définir la commande par défaut pour exécuter l'application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Command to run the FastAPI application
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -5,12 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from ultralytics import YOLO
 from app.script_extract_text import extract_text
+from app.script_annotation_yolo import process_image_and_annotations
 import uvicorn as uvicorn
 import os
 from datetime import datetime
-from app.script_annotation_yolo import process_image_and_annotations
-
-
 
 # Configurer du logger
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

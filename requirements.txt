@@ -6,5 +6,3 @@ onnxruntime
 fastapi==0.115.6
 uvicorn
 python-multipart
-paddlepaddle 
-paddleocr
